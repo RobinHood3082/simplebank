@@ -7,6 +7,7 @@ import (
 
 	"github.com/RobinHood3082/simplebank/api"
 	db "github.com/RobinHood3082/simplebank/db/sqlc"
+	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -21,9 +22,10 @@ func main() {
 		log.Fatal("cannot connect to db:", err)
 	}
 
+	validate := validator.New(validator.WithRequiredStructEnabled())
 	logger := slog.Default()
 	store := db.NewStore(conn)
-	server := api.NewServer(store, logger)
+	server := api.NewServer(store, logger, validate)
 
 	err = server.Start(serverAddress)
 	if err != nil {
