@@ -8,6 +8,7 @@ func (server *Server) getRoutes() {
 	standard := NewChain(server.LogRequest, server.RecoverPanic)
 
 	router.Get("/health", standard.Then(server.healthCheck))
+	router.Post("/accounts", standard.Then(server.createAccount))
 
 	server.router = router
 }
