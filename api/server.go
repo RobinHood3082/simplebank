@@ -7,7 +7,6 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-	"runtime/debug"
 	"strings"
 
 	db "github.com/RobinHood3082/simplebank/db/sqlc"
@@ -35,23 +34,16 @@ func (server *Server) Start(addr string) error {
 	return server.router.Serve(addr)
 }
 
-// The serverError helper writes an error message and stack trace to the errorLog,
-// then sends a generic 500 Internal Server Error response to the user.
-func (server *Server) serverError(w http.ResponseWriter, err error) {
-	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
-	server.logger.Error(trace)
-
-	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+// ErrorResponse represents an error message from the server
+type ErrorResponse struct {
+	Message string `json:"message"`
 }
 
-// The clientError helper sends a specific status code and error message to the user.
-func (server *Server) clientError(w http.ResponseWriter, status int) {
-	http.Error(w, http.StatusText(status), status)
-}
-
-// The notFound helper is a convenience wrapper around clientError which sends a 404 Not Found response to the user.
-func (server *Server) notFound(w http.ResponseWriter) {
-	server.clientError(w, http.StatusNotFound)
+// writeError writes an error message and status code to the response writer
+func (server *Server) writeError(w http.ResponseWriter, status int, err error) {
+	var response ErrorResponse
+	response.Message = err.Error()
+	_ = server.writeJSON(w, status, response, nil)
 }
 
 // writeJSON writes the data to the response writer
@@ -126,6 +118,7 @@ func (server *Server) readJSON(w http.ResponseWriter, r *http.Request, v any) er
 	return nil
 }
 
+// bindData binds the data from the http.Request to the struct v
 func (server *Server) bindData(w http.ResponseWriter, r *http.Request, v any) error {
 	err := server.readJSON(w, r, v)
 	if err != nil {

@@ -9,6 +9,7 @@ func (server *Server) getRoutes() {
 
 	router.Get("/health", standard.Then(server.healthCheck))
 	router.Post("/accounts", standard.Then(server.createAccount))
+	router.Get("/accounts/{id}", standard.Then(server.getAccount))
 
 	server.router = router
 }
