@@ -72,3 +72,41 @@ func (server *Server) getAccount(w http.ResponseWriter, r *http.Request) {
 		server.writeError(w, http.StatusInternalServerError, err)
 	}
 }
+
+type listAccountRequest struct {
+	PageID   int32 `validate:"required,min=1"`
+	PageSize int32 `validate:"required,min=5,max=10"`
+}
+
+func (server *Server) listAccounts(w http.ResponseWriter, r *http.Request) {
+	listAccountRequest := listAccountRequest{PageID: 1, PageSize: 5}
+
+	if _, err := fmt.Sscanf(r.URL.Query().Get("page_id"), "%d", &listAccountRequest.PageID); err != nil {
+		listAccountRequest.PageID = 1
+	}
+
+	if _, err := fmt.Sscanf(r.URL.Query().Get("page_size"), "%d", &listAccountRequest.PageSize); err != nil {
+		listAccountRequest.PageSize = 5
+	}
+
+	if err := server.validate.Struct(listAccountRequest); err != nil {
+		server.writeError(w, http.StatusBadRequest, fmt.Errorf("invalid page_id or page_size"))
+		return
+	}
+
+	arg := db.ListAccountsParams{
+		Limit:  listAccountRequest.PageSize,
+		Offset: (listAccountRequest.PageID - 1) * listAccountRequest.PageSize,
+	}
+
+	accounts, err := server.store.ListAccounts(r.Context(), arg)
+	if err != nil {
+		server.writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	err = server.writeJSON(w, http.StatusOK, accounts, nil)
+	if err != nil {
+		server.writeError(w, http.StatusInternalServerError, err)
+	}
+}

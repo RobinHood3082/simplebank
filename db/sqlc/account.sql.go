@@ -19,7 +19,7 @@ RETURNING id, owner, balance, currency, created_at
 type AddAccountBalanceParams struct {
 	Amount int64 `json:"amount"`
 	ID     int64 `json:"id"`
-} 
+}
 
 func (q *Queries) AddAccountBalance(ctx context.Context, arg AddAccountBalanceParams) (Account, error) {
 	row := q.db.QueryRow(ctx, addAccountBalance, arg.Amount, arg.ID)
@@ -125,7 +125,7 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Account
+	items := []Account{}
 	for rows.Next() {
 		var i Account
 		if err := rows.Scan(
