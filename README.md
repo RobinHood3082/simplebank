@@ -1,6 +1,6 @@
 # SimpleBank
 
-Simple bank, made with Go.
+Simple bank, made with Go. (Work-in-progress, not very organized yet).
 
 ## Features
 
@@ -11,24 +11,9 @@ Simple bank, made with Go.
 
 ## Installation
 
-To install and run the project, follow these steps:
+To run the project, follow these steps:
 
-1. Clone the repository:
-    ```
-    git clone <repository_url>
-    ```
-
-2. Navigate to the project directory:
-    ```
-    cd simplebank
-    ```
-
-3. Install Go and SQL database if not already installed.
-
-4. Set up the database connection in the configuration file.
-
-5. Build and run the project using the Makefile:
-    ```
-    make run
-    ```
-
+1. Run `make postgres` to run the postgres server in docker with the necessary envs.
+2. Run `make createdb` to create the DB in postgres.
+3. Run `make migrateup` to run the DB migrations.
+4. Now you are ready to use `make server` any time you want to run the server.
