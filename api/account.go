@@ -79,24 +79,30 @@ type listAccountRequest struct {
 }
 
 func (server *Server) listAccounts(w http.ResponseWriter, r *http.Request) {
-	listAccountRequest := listAccountRequest{PageID: 1, PageSize: 5}
+	var req listAccountRequest
+	var err error
 
-	if _, err := fmt.Sscanf(r.URL.Query().Get("page_id"), "%d", &listAccountRequest.PageID); err != nil {
-		listAccountRequest.PageID = 1
+	qs := r.URL.Query()
+	err = server.readInt32(qs, "page_id", 1, &req.PageID)
+	if err != nil {
+		server.writeError(w, http.StatusBadRequest, err)
+		return
 	}
 
-	if _, err := fmt.Sscanf(r.URL.Query().Get("page_size"), "%d", &listAccountRequest.PageSize); err != nil {
-		listAccountRequest.PageSize = 5
+	err = server.readInt32(qs, "page_size", 5, &req.PageSize)
+	if err != nil {
+		server.writeError(w, http.StatusBadRequest, err)
+		return
 	}
 
-	if err := server.validate.Struct(listAccountRequest); err != nil {
+	if err := server.validate.Struct(req); err != nil {
 		server.writeError(w, http.StatusBadRequest, fmt.Errorf("invalid page_id or page_size"))
 		return
 	}
 
 	arg := db.ListAccountsParams{
-		Limit:  listAccountRequest.PageSize,
-		Offset: (listAccountRequest.PageID - 1) * listAccountRequest.PageSize,
+		Limit:  req.PageSize,
+		Offset: (req.PageID - 1) * req.PageSize,
 	}
 
 	accounts, err := server.store.ListAccounts(r.Context(), arg)

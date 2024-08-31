@@ -7,6 +7,8 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 
 	db "github.com/RobinHood3082/simplebank/db/sqlc"
@@ -132,5 +134,66 @@ func (server *Server) bindData(w http.ResponseWriter, r *http.Request, v any) er
 		return err
 	}
 
+	return nil
+}
+
+// The readString() helper returns a string value from the query string, or the provided
+// default value if no matching key could be found.
+func (server *Server) readString(qs url.Values, key string, defaultValue string) string {
+	s := qs.Get(key)
+	if s == "" {
+		return defaultValue
+	}
+	return s
+}
+
+// The readCSV() helper reads a string value from the query string and then splits it
+// into a slice on the comma character. If no matching key could be found, it returns
+// the provided default value.
+func (server *Server) readCSV(qs url.Values, key string, defaultValue []string) []string {
+	csv := qs.Get(key)
+	if csv == "" {
+		return defaultValue
+	}
+	return strings.Split(csv, ",")
+}
+
+// The readInt32() helper reads a string value from the query string and converts it to an
+// int32 before returning. If no matching key could be found it returns the provided
+// default value. If the value couldn't be converted to an integer, then we return an
+// error.
+func (server *Server) readInt32(qs url.Values, key string, defaultValue int, dest *int32) error { // Extract the value from the query string.
+	s := qs.Get(key)
+	if s == "" {
+		*dest = int32(defaultValue)
+		return nil
+	}
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		*dest = int32(defaultValue)
+		return fmt.Errorf("invalid value for %s", key)
+	}
+
+	*dest = int32(i)
+	return nil
+}
+
+// The readInt64() helper reads a string value from the query string and converts it to an
+// int64 before returning. If no matching key could be found it returns the provided
+// default value. If the value couldn't be converted to an integer, then we return an
+// error.
+func (server *Server) readInt64(qs url.Values, key string, defaultValue int, dest *int64) error {
+	s := qs.Get(key)
+	if s == "" {
+		*dest = int64(defaultValue)
+		return nil
+	}
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		*dest = int64(defaultValue)
+		return fmt.Errorf("invalid value for %s", key)
+	}
+
+	*dest = int64(i)
 	return nil
 }
