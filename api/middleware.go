@@ -8,6 +8,7 @@ import (
 // Middleware is a function that takes an http.HandlerFunc and returns another http.HandlerFunc
 type Middleware func(http.HandlerFunc) http.HandlerFunc
 
+// MiddlewareChain is a list of middlewares
 type MiddlewareChain []Middleware
 
 // LogRequest logs all incoming requests

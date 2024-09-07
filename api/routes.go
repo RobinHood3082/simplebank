@@ -1,9 +1,13 @@
 package api
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/RobinHood3082/simplebank/pkg/router"
+)
 
 func (server *Server) getRoutes() {
-	router := NewRouter(http.NewServeMux())
+	router := router.NewRouter(http.NewServeMux())
 
 	standard := NewChain(server.LogRequest, server.RecoverPanic)
 
