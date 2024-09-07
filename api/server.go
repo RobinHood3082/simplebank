@@ -11,21 +11,21 @@ import (
 	"strconv"
 	"strings"
 
-	db "github.com/RobinHood3082/simplebank/db/sqlc"
+	"github.com/RobinHood3082/simplebank/internal/persistence"
 	"github.com/RobinHood3082/simplebank/pkg/router"
 	"github.com/go-playground/validator/v10"
 )
 
 // Server serves HTTP requests for our banking service
 type Server struct {
-	store    db.Store
+	store    persistence.Store
 	router   *router.Router
 	logger   *slog.Logger
 	validate *validator.Validate
 }
 
 // NewServer creates a new HTTP server and set up routing
-func NewServer(store db.Store, logger *slog.Logger, validate *validator.Validate) *Server {
+func NewServer(store persistence.Store, logger *slog.Logger, validate *validator.Validate) *Server {
 	server := &Server{store: store, logger: logger, validate: validate}
 	server.getRoutes()
 	return server

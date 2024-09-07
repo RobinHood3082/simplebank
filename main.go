@@ -6,7 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/RobinHood3082/simplebank/api"
-	db "github.com/RobinHood3082/simplebank/db/sqlc"
+	"github.com/RobinHood3082/simplebank/internal/persistence"
 	"github.com/RobinHood3082/simplebank/util"
 	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -25,7 +25,7 @@ func main() {
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	logger := slog.Default()
-	store := db.NewStore(conn)
+	store := persistence.NewStore(conn)
 	server := api.NewServer(store, logger, validate)
 
 	err = server.Start(config.ServerAddress)

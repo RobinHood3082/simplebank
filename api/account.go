@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	db "github.com/RobinHood3082/simplebank/db/sqlc"
+	"github.com/RobinHood3082/simplebank/internal/persistence"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -20,7 +20,7 @@ func (server *Server) createAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	arg := db.CreateAccountParams{
+	arg := persistence.CreateAccountParams{
 		Owner:    req.Owner,
 		Balance:  0,
 		Currency: req.Currency,
@@ -100,7 +100,7 @@ func (server *Server) listAccounts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	arg := db.ListAccountsParams{
+	arg := persistence.ListAccountsParams{
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
 	}
