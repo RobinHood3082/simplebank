@@ -3,13 +3,14 @@ package app
 import (
 	"net/http"
 
+	"github.com/RobinHood3082/simplebank/pkg/middleware"
 	"github.com/RobinHood3082/simplebank/pkg/router"
 )
 
 func (server *Server) getRoutes() {
 	router := router.NewRouter(http.NewServeMux())
 
-	standard := NewChain(server.LogRequest, server.RecoverPanic)
+	standard := middleware.NewChain(server.LogRequest, server.RecoverPanic)
 
 	router.Get("/health", standard.Then(server.healthCheck))
 	router.Post("/accounts", standard.Then(server.createAccount))
