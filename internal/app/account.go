@@ -43,7 +43,7 @@ func (server *Server) createAccount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	server.logger.Info("Account created", "account", account)
-	err = server.writeJSON(w, http.StatusCreated, account, nil)
+	err = server.writeJSON(w, http.StatusOK, account, nil)
 	if err != nil {
 		server.writeError(w, http.StatusInternalServerError, err)
 	}

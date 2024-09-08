@@ -39,7 +39,7 @@ func (server *Server) createTransfer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	server.logger.Info("Transfer created", "Transfer", Transfer)
-	err = server.writeJSON(w, http.StatusCreated, Transfer, nil)
+	err = server.writeJSON(w, http.StatusOK, Transfer, nil)
 	if err != nil {
 		server.writeError(w, http.StatusInternalServerError, err)
 	}
