@@ -13,6 +13,9 @@ func (server *Server) getRoutes() {
 	standard := middleware.NewChain(server.LogRequest, server.RecoverPanic)
 
 	router.Get("/health", standard.Then(server.healthCheck))
+
+	router.Post("/users", standard.Then(server.createUser))
+
 	router.Post("/accounts", standard.Then(server.createAccount))
 	router.Get("/accounts/{id}", standard.Then(server.getAccount))
 	router.Get("/accounts", standard.Then(server.listAccounts))
