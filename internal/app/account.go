@@ -5,7 +5,9 @@ import (
 	"net/http"
 
 	"github.com/RobinHood3082/simplebank/internal/persistence"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type createAccountRequest struct {
@@ -28,6 +30,14 @@ func (server *Server) createAccount(w http.ResponseWriter, r *http.Request) {
 
 	account, err := server.store.CreateAccount(r.Context(), arg)
 	if err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			switch pgErr.Code {
+			case pgerrcode.UniqueViolation, pgerrcode.ForeignKeyViolation:
+				server.writeError(w, http.StatusForbidden, err)
+				return
+			}
+		}
+
 		server.writeError(w, http.StatusInternalServerError, err)
 		return
 	}
