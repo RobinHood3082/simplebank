@@ -10,7 +10,7 @@ import (
 
 type createAccountRequest struct {
 	Owner    string `json:"owner" validate:"required"`
-	Currency string `json:"currency" validate:"required,oneof=EUR USD BDT GBP"`
+	Currency string `json:"currency" validate:"required,currency"`
 }
 
 func (server *Server) createAccount(w http.ResponseWriter, r *http.Request) {

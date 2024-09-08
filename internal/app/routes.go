@@ -17,6 +17,8 @@ func (server *Server) getRoutes() {
 	router.Get("/accounts/{id}", standard.Then(server.getAccount))
 	router.Get("/accounts", standard.Then(server.listAccounts))
 
+	router.Post("/transfers", standard.Then(server.createTransfer))
+
 	server.router = router
 }
 
