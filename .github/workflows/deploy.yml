@@ -19,7 +19,7 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        role-to-assume: arn:aws:iam::533075172220:user/github-ci
+        role-to-assume: arn:aws:iam::533075172220:role/simplebank-deployment
         aws-region: ap-south-1
         audience: sts.amazonaws.com
 
