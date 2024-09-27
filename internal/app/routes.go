@@ -10,18 +10,19 @@ import (
 func (server *Server) getRoutes() {
 	router := router.NewRouter(http.NewServeMux())
 
-	standard := middleware.NewChain(server.LogRequest, server.RecoverPanic)
+	standardChain := middleware.NewChain(server.LogRequest, server.RecoverPanic)
+	authenticatedChain := append(standardChain, server.Authenticate)
 
-	router.Get("/health", standard.Then(server.healthCheck))
+	router.Get("/health", standardChain.Then(server.healthCheck))
 
-	router.Post("/users", standard.Then(server.createUser))
-	router.Post("/users/login", standard.Then(server.loginUser))
+	router.Post("/users", standardChain.Then(server.createUser))
+	router.Post("/users/login", standardChain.Then(server.loginUser))
 
-	router.Post("/accounts", standard.Then(server.createAccount))
-	router.Get("/accounts/{id}", standard.Then(server.getAccount))
-	router.Get("/accounts", standard.Then(server.listAccounts))
+	router.Post("/accounts", authenticatedChain.Then(server.createAccount))
+	router.Get("/accounts/{id}", authenticatedChain.Then(server.getAccount))
+	router.Get("/accounts", authenticatedChain.Then(server.listAccounts))
 
-	router.Post("/transfers", standard.Then(server.createTransfer))
+	router.Post("/transfers", authenticatedChain.Then(server.createTransfer))
 
 	server.router = router
 }

@@ -5,13 +5,13 @@ import (
 	"net/http"
 
 	"github.com/RobinHood3082/simplebank/internal/persistence"
+	"github.com/RobinHood3082/simplebank/internal/token"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type createAccountRequest struct {
-	Owner    string `json:"owner" validate:"required"`
 	Currency string `json:"currency" validate:"required,currency"`
 }
 
@@ -22,8 +22,9 @@ func (server *Server) createAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	authPayload := r.Context().Value(AuthorizationPayloadKey).(*token.Payload)
 	arg := persistence.CreateAccountParams{
-		Owner:    req.Owner,
+		Owner:    authPayload.Username,
 		Balance:  0,
 		Currency: req.Currency,
 	}
@@ -77,6 +78,12 @@ func (server *Server) getAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	authPayload := r.Context().Value(AuthorizationPayloadKey).(*token.Payload)
+	if account.Owner != authPayload.Username {
+		server.writeError(w, http.StatusForbidden, fmt.Errorf("account doesn't belong to the authenticated user"))
+		return
+	}
+
 	err = server.writeJSON(w, http.StatusOK, account, nil)
 	if err != nil {
 		server.writeError(w, http.StatusInternalServerError, err)
@@ -110,9 +117,11 @@ func (server *Server) listAccounts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	authPayload := r.Context().Value(AuthorizationPayloadKey).(*token.Payload)
 	arg := persistence.ListAccountsParams{
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
+		Owner:  authPayload.Username,
 	}
 
 	accounts, err := server.store.ListAccounts(r.Context(), arg)
