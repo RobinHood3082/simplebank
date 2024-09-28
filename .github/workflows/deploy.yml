@@ -27,6 +27,17 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2 
 
+    - name: Checkout private secrets repo
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ secrets.SIMPLEBANK_ENV_REPO }}
+        token: ${{ secrets.SIMPLEBANK_GITHUB_TOKEN }}
+        path: ${{ secrets.SIMPLEBANK_ENV_REPO_NAME }}
+
+    - name: Set environment variables for productions
+      run: |
+        cp ${{ secrets.SIMPLEBANK_ENV_REPO_NAME }}/app.env app.env
+
     - name: Build, tag, and push docker image to Amazon ECR
       env:
         REGISTRY: ${{ steps.login-ecr.outputs.registry }}
