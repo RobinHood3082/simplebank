@@ -37,7 +37,6 @@ jobs:
     - name: Set environment variables for productions
       run: |
         cp ${{ secrets.SIMPLEBANK_ENV_REPO_NAME }}/app.env app.env
-        source .env
 
     - name: Build, tag, and push docker image to Amazon ECR
       env:
