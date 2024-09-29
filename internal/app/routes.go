@@ -17,6 +17,7 @@ func (server *Server) getRoutes() {
 
 	router.Post("/users", standardChain.Then(server.createUser))
 	router.Post("/users/login", standardChain.Then(server.loginUser))
+	router.Post("/tokens/renew_access", standardChain.Then(server.renewAccessToken))
 
 	router.Post("/accounts", authenticatedChain.Then(server.createAccount))
 	router.Get("/accounts/{id}", authenticatedChain.Then(server.getAccount))
