@@ -2,9 +2,11 @@ package app
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/RobinHood3082/simplebank/internal/persistence"
 	"github.com/RobinHood3082/simplebank/util"
+	"github.com/google/uuid"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -85,8 +87,12 @@ type loginUserRequest struct {
 }
 
 type loginUserResponse struct {
-	AccessToken string       `json:"access_token"`
-	User        userResponse `json:"user"`
+	SessionID             uuid.UUID    `json:"session_id"`
+	AccessToken           string       `json:"access_token"`
+	AccessTokenExpiresAt  time.Time    `json:"access_token_expires_at"`
+	RefreshToken          string       `json:"refresh_token"`
+	RefreshTokenExpiresAt time.Time    `json:"refresh_token_expires_at"`
+	User                  userResponse `json:"user"`
 }
 
 func (server *Server) loginUser(w http.ResponseWriter, r *http.Request) {
@@ -112,7 +118,7 @@ func (server *Server) loginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessToken, err := server.tokenMaker.CreateToken(
+	accessToken, accessPayload, err := server.tokenMaker.CreateToken(
 		user.Username,
 		server.config.AccessTokenDuration,
 	)
@@ -121,9 +127,36 @@ func (server *Server) loginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(
+		user.Username,
+		server.config.RefreshTokenDuration,
+	)
+	if err != nil {
+		server.writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	session, err := server.store.CreateSession(r.Context(), persistence.CreateSessionParams{
+		ID:           pgtype.UUID{Bytes: refreshPayload.ID, Valid: true},
+		Username:     user.Username,
+		RefreshToken: refreshToken,
+		UserAgent:    r.UserAgent(),
+		ClientIp:     r.RemoteAddr,
+		IsBlocked:    false,
+		ExpiresAt:    pgtype.Timestamptz{Time: refreshPayload.ExpiredAt, Valid: true},
+	})
+	if err != nil {
+		server.writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+
 	rsp := loginUserResponse{
-		AccessToken: accessToken,
-		User:        newUserResponse(user),
+		SessionID:             session.ID.Bytes,
+		AccessToken:           accessToken,
+		AccessTokenExpiresAt:  accessPayload.ExpiredAt,
+		RefreshToken:          refreshToken,
+		RefreshTokenExpiresAt: refreshPayload.ExpiredAt,
+		User:                  newUserResponse(user),
 	}
 
 	server.logger.Info("User logged in", "User", user)
