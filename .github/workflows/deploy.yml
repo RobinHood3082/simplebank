@@ -48,7 +48,8 @@ jobs:
         docker push -a $REGISTRY/$REPOSITORY
 
   deploy:
-    depends-on: build
+    name: Deploy to production
+    needs: build
     runs-on: ubuntu-latest
     steps:
     - name: Checkout private secrets repo
