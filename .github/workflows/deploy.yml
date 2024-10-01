@@ -46,3 +46,39 @@ jobs:
       run: |
         docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest .
         docker push -a $REGISTRY/$REPOSITORY
+
+  deploy:
+    depends-on: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout private secrets repo
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ secrets.SIMPLEBANK_ENV_REPO }}
+        token: ${{ secrets.SIMPLEBANK_GITHUB_TOKEN }}
+        path: ${{ secrets.SIMPLEBANK_ENV_REPO_NAME }}
+
+    - name: Copy deployment file via ssh
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        port: ${{ secrets.SSH_PORT }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        key: ${{ secrets.SSH_KEY }}
+        source: ${{ secrets.SIMPLEBANK_ENV_REPO_NAME }}/deploy.sh
+        target: ~/simplebank/deploy.sh
+
+    - name: Run deployment script
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        port: ${{ secrets.SSH_PORT }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          cd simplebank
+          chmod +x deploy.sh
+          ./deploy.sh >> deploy.log 2>&1
+          rm deploy.sh
