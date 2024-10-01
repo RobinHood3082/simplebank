@@ -67,8 +67,8 @@ jobs:
         port: ${{ secrets.SSH_PORT }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         key: ${{ secrets.SSH_KEY }}
-        source: ${{ secrets.SIMPLEBANK_ENV_REPO_NAME }}/deploy.sh
-        target: ~/simplebank/deploy.sh
+        source: "${{ secrets.SIMPLEBANK_ENV_REPO_NAME }}/deploy.sh"
+        target: ~/simplebank
 
     - name: Run deployment script
       uses: appleboy/ssh-action@master
