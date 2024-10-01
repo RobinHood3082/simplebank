@@ -81,5 +81,6 @@ jobs:
         script: |
           cd simplebank/${{ secrets.SIMPLEBANK_ENV_REPO_NAME }}
           chmod +x deploy.sh
-          ./deploy.sh >> deploy.log 2>&1
+          ./deploy.sh >> ~/simplebank/deploy.log 2>&1
           rm deploy.sh
+          cd ../ && rm -rf ${{ secrets.SIMPLEBANK_ENV_REPO_NAME }}
