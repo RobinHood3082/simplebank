@@ -79,7 +79,7 @@ jobs:
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         key: ${{ secrets.SSH_KEY }}
         script: |
-          cd simplebank
+          cd simplebank/${{ secrets.SIMPLEBANK_ENV_REPO_NAME }}
           chmod +x deploy.sh
           ./deploy.sh >> deploy.log 2>&1
           rm deploy.sh
