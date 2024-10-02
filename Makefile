@@ -1,3 +1,5 @@
+DB_URL=postgresql://backend_stuff:robinrobin@localhost:5432/simple_bank?sslmode=disable
+
 postgres:
 	docker run --name postgres16.2 --network bank-network -p 5432:5432 -e POSTGRES_USER=backend_stuff -e POSTGRES_PASSWORD=robinrobin -d postgres:16.2-alpine
 
@@ -8,10 +10,10 @@ dropdb:
 	docker exec -it postgres16.2 dropdb simple_bank
 
 migrateup:
-	migrate -path internal/db/migration -database "postgresql://backend_stuff:robinrobin@localhost:5432/simple_bank?sslmode=disable" -verbose up
+	migrate -path internal/db/migration -database "$(DB_URL)" -verbose up
 
 migratedown:
-	migrate -path internal/db/migration -database "postgresql://backend_stuff:robinrobin@localhost:5432/simple_bank?sslmode=disable" -verbose down
+	migrate -path internal/db/migration -database "$(DB_URL)" -verbose down
 
 test:
 	go test -v -cover ./...
@@ -19,7 +21,13 @@ test:
 server:
 	go run ./cmd/simplebank/main.go
 
+db_docs:
+	dbdocs build doc/db.dbml
+
+db_schema:
+	dbml2sql --postgres -o doc/schema.sql doc/db.dbml
+
 sqlc:
 	sqlc generate
 
-.PHONY: postgres createdb dropdb migrateup migratedown test sqlc server
+.PHONY: postgres createdb dropdb migrateup migratedown test sqlc server db_docs db_schema
