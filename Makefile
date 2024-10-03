@@ -30,4 +30,11 @@ db_schema:
 sqlc:
 	sqlc generate
 
-.PHONY: postgres createdb dropdb migrateup migratedown test sqlc server db_docs db_schema
+proto:
+	rm -f internal/pb/*.go
+	protoc --proto_path=proto --go_out=internal/pb --go_opt=paths=source_relative \
+    --go-grpc_out=internal/pb --go-grpc_opt=paths=source_relative \
+    proto/*.proto
+
+
+.PHONY: postgres createdb dropdb migrateup migratedown test sqlc server db_docs db_schema proto
