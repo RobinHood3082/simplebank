@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"log/slog"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -15,6 +17,8 @@ import (
 	"github.com/RobinHood3082/simplebank/internal/persistence"
 	"github.com/RobinHood3082/simplebank/internal/token"
 	"github.com/RobinHood3082/simplebank/util"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 // Server serves gRPC requests for our banking service
@@ -33,10 +37,21 @@ func NewServer(store persistence.Store, logger *slog.Logger, tokenMaker token.Ma
 }
 
 // Start runs the gRPC server on a specific address
-// func (server *Server) Start(addr string) error {
-// 	server.logger.Info(fmt.Sprintf("Starting server on %s", addr))
-// 	return server.router.Serve(addr)
-// }
+func (server *Server) Start(addr string) error {
+	grpcServer := grpc.NewServer()
+	pb.RegisterSimpleBankServer(grpcServer, server)
+	reflection.Register(grpcServer)
+
+	listener, err := net.Listen("tcp", addr)
+	if err != nil {
+		log.Fatal("cannot start gRPC server:", err)
+		return err
+	}
+
+	log.Printf("starting gRPC server on %s", listener.Addr().String())
+	err = grpcServer.Serve(listener)
+	return err
+}
 
 // ErrorResponse represents an error message from the server
 type ErrorResponse struct {

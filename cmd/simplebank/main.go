@@ -4,18 +4,14 @@ import (
 	"context"
 	"log"
 	"log/slog"
-	"net"
 
 	"github.com/RobinHood3082/simplebank/internal/app"
 	"github.com/RobinHood3082/simplebank/internal/gapi"
-	"github.com/RobinHood3082/simplebank/internal/pb"
 	"github.com/RobinHood3082/simplebank/internal/persistence"
 	"github.com/RobinHood3082/simplebank/internal/token"
 	"github.com/RobinHood3082/simplebank/util"
 	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -71,18 +67,7 @@ func main() {
 func runGRPCServer(store persistence.Store, logger *slog.Logger, tokenMaker token.Maker, config util.Config) error {
 	server := gapi.NewServer(store, logger, tokenMaker, config)
 
-	grpcServer := grpc.NewServer()
-	pb.RegisterSimpleBankServer(grpcServer, server)
-	reflection.Register(grpcServer)
-
-	listener, err := net.Listen("tcp", config.GRPCServerAddress)
-	if err != nil {
-		log.Fatal("cannot start gRPC server:", err)
-		return err
-	}
-
-	log.Printf("starting gRPC server on %s", listener.Addr().String())
-	err = grpcServer.Serve(listener)
+	err := server.Start(config.GRPCServerAddress)
 	if err != nil {
 		log.Fatal("cannot start gRPC server:", err)
 		return err
