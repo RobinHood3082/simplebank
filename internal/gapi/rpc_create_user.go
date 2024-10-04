@@ -16,7 +16,7 @@ import (
 func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
 	hashedPassword, err := util.HashPassword(req.GetPassword())
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to hash password: %s", err)
+		return nil, status.Errorf(codes.Internal, "failed to hash password")
 	}
 
 	arg := persistence.CreateUserParams{
@@ -31,10 +31,10 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 		if pgErr, ok := err.(*pgconn.PgError); ok {
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
-				return nil, status.Errorf(codes.AlreadyExists, "username already exists: %s", err)
+				return nil, status.Errorf(codes.AlreadyExists, "username already exists")
 			}
 		}
-		return nil, status.Errorf(codes.Internal, "failed to create user: %s", err)
+		return nil, status.Errorf(codes.Internal, "failed to create user")
 	}
 
 	rsp := &pb.CreateUserResponse{
