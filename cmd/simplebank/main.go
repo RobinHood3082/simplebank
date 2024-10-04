@@ -4,14 +4,19 @@ import (
 	"context"
 	"log"
 	"log/slog"
+	"net"
+	"net/http"
 
 	"github.com/RobinHood3082/simplebank/internal/app"
 	"github.com/RobinHood3082/simplebank/internal/gapi"
+	"github.com/RobinHood3082/simplebank/internal/pb"
 	"github.com/RobinHood3082/simplebank/internal/persistence"
 	"github.com/RobinHood3082/simplebank/internal/token"
 	"github.com/RobinHood3082/simplebank/util"
 	"github.com/go-playground/validator/v10"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func main() {
@@ -56,6 +61,13 @@ func main() {
 	logger := slog.Default()
 	store := persistence.NewStore(conn)
 
+	go func() {
+		err := runGatewayServer(store, logger, tokenMaker, config)
+		if err != nil {
+			log.Fatal("failed to run gateway server:", err)
+		}
+	}()
+
 	err = runGRPCServer(store, logger, tokenMaker, config)
 	if err != nil {
 		log.Fatal("exiting server application")
@@ -70,6 +82,51 @@ func runGRPCServer(store persistence.Store, logger *slog.Logger, tokenMaker toke
 	err := server.Start(config.GRPCServerAddress)
 	if err != nil {
 		log.Fatal("cannot start gRPC server:", err)
+		return err
+	}
+
+	return nil
+}
+
+func runGatewayServer(store persistence.Store, logger *slog.Logger, tokenMaker token.Maker, config util.Config) error {
+	server := gapi.NewServer(store, logger, tokenMaker, config)
+
+	jsonOption := runtime.WithMarshalerOption(
+		runtime.MIMEWildcard,
+		&runtime.JSONPb{
+			MarshalOptions: protojson.MarshalOptions{
+				UseProtoNames: true,
+			},
+			UnmarshalOptions: protojson.UnmarshalOptions{
+				DiscardUnknown: true,
+			},
+		},
+	)
+
+	grpcMux := runtime.NewServeMux(jsonOption)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	err := pb.RegisterSimpleBankHandlerServer(ctx, grpcMux, server)
+	if err != nil {
+		log.Fatal("cannot start gateway server:", err)
+		return err
+	}
+
+	mux := http.NewServeMux()
+	mux.Handle("/", grpcMux)
+
+	listener, err := net.Listen("tcp", config.HTTPServerAddress)
+	if err != nil {
+		log.Fatal("cannot create listener:", err)
+		return err
+	}
+
+	log.Println("starting HTTP gateway server on", config.HTTPServerAddress)
+	err = http.Serve(listener, mux)
+	if err != nil {
+		log.Fatal("cannot start HTTP gateway server:", err)
 		return err
 	}
 
