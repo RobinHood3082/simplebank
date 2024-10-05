@@ -37,7 +37,8 @@ proto:
 	--go-grpc_out=internal/pb --go-grpc_opt=paths=source_relative \
 	--grpc-gateway_out=internal/pb --grpc-gateway_opt=paths=source_relative \
 	--openapiv2_out=doc/swagger --openapiv2_opt=allow_merge=true,merge_file_name=simple_bank \
-	proto/*.proto
+	proto/*.proto 
+	statik -src=./doc/swagger -dest=./doc
 
 evans:
 	evans --host localhost --port 9090 -r repl --package pb --service SimpleBank
