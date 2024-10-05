@@ -7,7 +7,6 @@ import (
 	"net"
 	"net/http"
 
-	_ "github.com/RobinHood3082/simplebank/doc/statik"
 	"github.com/RobinHood3082/simplebank/internal/app"
 	"github.com/RobinHood3082/simplebank/internal/gapi"
 	"github.com/RobinHood3082/simplebank/internal/pb"
@@ -15,10 +14,15 @@ import (
 	"github.com/RobinHood3082/simplebank/internal/token"
 	"github.com/RobinHood3082/simplebank/util"
 	"github.com/go-playground/validator/v10"
+	"github.com/golang-migrate/migrate/v4"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rakyll/statik/fs"
 	"google.golang.org/protobuf/encoding/protojson"
+
+	_ "github.com/RobinHood3082/simplebank/doc/statik"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 func main() {
@@ -31,6 +35,13 @@ func main() {
 	conn, err := pgxpool.New(context.Background(), config.DBSource)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
+		return
+	}
+
+	// Run db migrations
+	err = runDBMigrations(config.MigrationURL, config.DBSource)
+	if err != nil {
+		log.Fatal("cannot run db migrations:", err)
 		return
 	}
 
@@ -76,6 +87,23 @@ func main() {
 		return
 	}
 
+}
+
+func runDBMigrations(migrationURL string, dbSource string) error {
+	migrations, err := migrate.New(migrationURL, dbSource)
+	if err != nil {
+		log.Fatal("cannot create new migrate instance:", err)
+		return err
+	}
+
+	err = migrations.Up()
+	if err != nil && err != migrate.ErrNoChange {
+		log.Fatal("failed to run up migrations:", err)
+		return err
+	}
+
+	log.Println("db migrated successfully")
+	return nil
 }
 
 func runGRPCServer(store persistence.Store, logger *slog.Logger, tokenMaker token.Maker, config util.Config) error {
