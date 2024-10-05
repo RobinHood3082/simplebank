@@ -10,7 +10,9 @@ import (
 // It is populated by the environment variables or config file.
 type Config struct {
 	DBSource             string        `mapstructure:"DB_SOURCE" validate:"required"`
-	ServerAddress        string        `mapstructure:"SERVER_ADDRESS" validate:"required"`
+	MigrationURL         string        `mapstructure:"MIGRATION_URL" validate:"required"`
+	HTTPServerAddress    string        `mapstructure:"HTTP_SERVER_ADDRESS" validate:"required"`
+	GRPCServerAddress    string        `mapstructure:"GRPC_SERVER_ADDRESS" validate:"required"`
 	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY" validate:"required"`
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION" validate:"required"`
 	TokenType            string        `mapstructure:"TOKEN_TYPE" validate:"required,oneof=paseto jwt"`

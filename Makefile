@@ -18,7 +18,7 @@ migratedown:
 test:
 	go test -v -cover ./...
 
-server:
+server:  
 	go run ./cmd/simplebank/main.go
 
 db_docs:
@@ -30,4 +30,17 @@ db_schema:
 sqlc:
 	sqlc generate
 
-.PHONY: postgres createdb dropdb migrateup migratedown test sqlc server db_docs db_schema
+proto:
+	rm -f internal/pb/*.go
+	rm -rf doc/swagger/*.swagger.json
+	protoc --proto_path=proto --go_out=internal/pb --go_opt=paths=source_relative \
+	--go-grpc_out=internal/pb --go-grpc_opt=paths=source_relative \
+	--grpc-gateway_out=internal/pb --grpc-gateway_opt=paths=source_relative \
+	--openapiv2_out=doc/swagger --openapiv2_opt=allow_merge=true,merge_file_name=simple_bank \
+	proto/*.proto 
+	statik -src=./doc/swagger -dest=./doc
+
+evans:
+	evans --host localhost --port 9090 -r repl --package pb --service SimpleBank
+
+.PHONY: postgres createdb dropdb migrateup migratedown test sqlc server db_docs db_schema proto evans
