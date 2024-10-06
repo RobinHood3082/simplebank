@@ -13,15 +13,15 @@ import (
 
 const createSession = `-- name: CreateSession :one
 INSERT INTO sessions (
-  id ,
-  username ,
-  refresh_token ,
-  user_agent ,
-  client_ip ,
-  is_blocked ,
+  id,
+  username,
+  refresh_token,
+  user_agent,
+  client_ip,
+  is_blocked,
   expires_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7
+  $1, $2, $3, $4, $5, $6, $7
 ) RETURNING id, username, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at
 `
 
@@ -55,13 +55,15 @@ func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (S
 		&i.IsBlocked,
 		&i.ExpiresAt,
 		&i.CreatedAt,
-	) 
+	)
 	return i, err
 }
 
 const getSession = `-- name: GetSession :one
-SELECT id, username, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at FROM sessions 
-WHERE id = $1 LIMIT 1
+SELECT id, username, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at 
+FROM sessions 
+WHERE id = $1 
+LIMIT 1
 `
 
 func (q *Queries) GetSession(ctx context.Context, id pgtype.UUID) (Session, error) {
