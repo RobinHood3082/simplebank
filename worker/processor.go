@@ -34,6 +34,11 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store persistence.Stor
 				QueueCritical: 10,
 				QueueDefault:  5,
 			},
+			ErrorHandler: asynq.ErrorHandlerFunc(
+				func(ctx context.Context, task *asynq.Task, err error) {
+					slog.Error("error processing task", "type", task.Type(), "error", err, "payload", task.Payload())
+				},
+			),
 		},
 	)
 
