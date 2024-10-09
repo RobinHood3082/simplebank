@@ -15,6 +15,12 @@ migrateup:
 migratedown:
 	migrate -path internal/db/migration -database "$(DB_URL)" -verbose down
 
+migrateup1:
+	migrate -path internal/db/migration -database "$(DB_URL)" -verbose up 1
+
+migratedown1:
+	migrate -path internal/db/migration -database "$(DB_URL)" -verbose down 1
+
 test:
 	go test -v -cover -short ./...
 
