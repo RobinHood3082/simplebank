@@ -21,6 +21,9 @@ test:
 server:  
 	go run ./cmd/simplebank/main.go
 
+new_migration:
+	migrate create -ext sql -dir internal/db/migration -seq $(name)
+
 db_docs:
 	dbdocs build doc/db.dbml
 
@@ -46,4 +49,4 @@ evans:
 redis:
 	docker run --name redis7.4.1 -p 6379:6379 -d redis:7.4.1-alpine
 
-.PHONY: postgres createdb dropdb migrateup migratedown test sqlc server db_docs db_schema proto evans redis
+.PHONY: postgres createdb dropdb migrateup migratedown test sqlc server db_docs db_schema proto evans redis new_migration
