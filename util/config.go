@@ -18,6 +18,9 @@ type Config struct {
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION" validate:"required"`
 	TokenType            string        `mapstructure:"TOKEN_TYPE" validate:"required,oneof=paseto jwt"`
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION" validate:"required"`
+	EmailSenderName      string        `mapstructure:"EMAIL_SENDER_NAME" validate:"required"`
+	EmailSenderAddress   string        `mapstructure:"EMAIL_SENDER_ADDRESS" validate:"required"`
+	EmailSenderPassword  string        `mapstructure:"EMAIL_SENDER_PASSWORD" validate:"required"`
 }
 
 // LoadConfig loads the configuration from the file specified by the path.
