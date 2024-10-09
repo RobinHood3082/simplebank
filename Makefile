@@ -16,7 +16,7 @@ migratedown:
 	migrate -path internal/db/migration -database "$(DB_URL)" -verbose down
 
 test:
-	go test -v -cover ./...
+	go test -v -cover -short ./...
 
 server:  
 	go run ./cmd/simplebank/main.go
