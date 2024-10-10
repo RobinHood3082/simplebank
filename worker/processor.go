@@ -7,6 +7,8 @@ import (
 	"log/slog"
 
 	"github.com/RobinHood3082/simplebank/internal/persistence"
+	"github.com/RobinHood3082/simplebank/mail"
+	"github.com/RobinHood3082/simplebank/util"
 	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5"
 )
@@ -24,9 +26,10 @@ type TaskProcessor interface {
 type RedisTaskProcessor struct {
 	server *asynq.Server
 	store  persistence.Store
+	mailer mail.EmailSender
 }
 
-func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store persistence.Store) TaskProcessor {
+func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store persistence.Store, mailer mail.EmailSender) TaskProcessor {
 	server := asynq.NewServer(
 		redisOpt,
 		asynq.Config{
@@ -45,6 +48,7 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store persistence.Stor
 	return &RedisTaskProcessor{
 		server: server,
 		store:  store,
+		mailer: mailer,
 	}
 }
 
@@ -62,7 +66,37 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 		return fmt.Errorf("failed to get user: %w", err)
 	}
 
-	// TODO: send email to user
+	verifyEmail, err := processor.store.CreateVerifyEmail(
+		ctx,
+		persistence.CreateVerifyEmailParams{
+			Username:   user.Username,
+			Email:      user.Email,
+			SecretCode: util.RandomString(32),
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create verify email: %w", err)
+	}
+
+	subject := "Simple Bank: Verify your email"
+	verifyUrl := fmt.Sprintf("http://simplebank-robinhood.com/verify-email?id=%d&secret_code=%s",
+		verifyEmail.ID,
+		verifyEmail.SecretCode,
+	)
+	content := fmt.Sprintf(
+		`Hello %s, <br/>
+		Thank you for registering with us. <br/>
+		Please <a href="%s">click here</a> to verify your email address.`,
+		user.Username,
+		verifyUrl,
+	)
+	to := []string{user.Email}
+
+	err = processor.mailer.SendEmail(subject, content, to, nil, nil, nil)
+	if err != nil {
+		return fmt.Errorf("failed to send email: %w", err)
+	}
+
 	slog.Info("type", "recieved task", task.Type(), "payload", task.Payload(), "user", user.Username)
 
 	return nil

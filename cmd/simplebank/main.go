@@ -12,6 +12,7 @@ import (
 	"github.com/RobinHood3082/simplebank/internal/pb"
 	"github.com/RobinHood3082/simplebank/internal/persistence"
 	"github.com/RobinHood3082/simplebank/internal/token"
+	"github.com/RobinHood3082/simplebank/mail"
 	"github.com/RobinHood3082/simplebank/util"
 	"github.com/RobinHood3082/simplebank/worker"
 	"github.com/go-playground/validator/v10"
@@ -83,7 +84,7 @@ func main() {
 	store := persistence.NewStore(conn)
 
 	go func() {
-		err := runTaskProcessor(redisOpt, store)
+		err := runTaskProcessor(redisOpt, store, config)
 		if err != nil {
 			log.Fatal("failed to run task processor:", err)
 		}
@@ -121,8 +122,13 @@ func runDBMigrations(migrationURL string, dbSource string) error {
 	return nil
 }
 
-func runTaskProcessor(redisOpt asynq.RedisClientOpt, store persistence.Store) error {
-	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store)
+func runTaskProcessor(redisOpt asynq.RedisClientOpt, store persistence.Store, config util.Config) error {
+	mailer := mail.NewGmailSender(
+		config.EmailSenderName,
+		config.EmailSenderAddress,
+		config.EmailSenderPassword,
+	)
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer)
 	log.Println("task processor starting")
 
 	err := taskProcessor.Start()
