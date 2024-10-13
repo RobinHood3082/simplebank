@@ -64,6 +64,7 @@ func (server *Server) renewAccessToken(w http.ResponseWriter, r *http.Request) {
 
 	accessToken, accessPayload, err := server.tokenMaker.CreateToken(
 		refreshPayload.Username,
+		refreshPayload.Role,
 		server.config.AccessTokenDuration,
 	)
 	if err != nil {
