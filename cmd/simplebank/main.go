@@ -12,10 +12,13 @@ import (
 	"github.com/RobinHood3082/simplebank/internal/pb"
 	"github.com/RobinHood3082/simplebank/internal/persistence"
 	"github.com/RobinHood3082/simplebank/internal/token"
+	"github.com/RobinHood3082/simplebank/mail"
 	"github.com/RobinHood3082/simplebank/util"
+	"github.com/RobinHood3082/simplebank/worker"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rakyll/statik/fs"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -37,6 +40,12 @@ func main() {
 		log.Fatal("cannot connect to db:", err)
 		return
 	}
+
+	redisOpt := asynq.RedisClientOpt{
+		Addr: config.RedisAddress,
+	}
+
+	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
 
 	// Run db migrations
 	err = runDBMigrations(config.MigrationURL, config.DBSource)
@@ -75,13 +84,20 @@ func main() {
 	store := persistence.NewStore(conn)
 
 	go func() {
-		err := runGatewayServer(store, logger, tokenMaker, config)
+		err := runTaskProcessor(redisOpt, store, config)
+		if err != nil {
+			log.Fatal("failed to run task processor:", err)
+		}
+	}()
+
+	go func() {
+		err := runGatewayServer(store, logger, tokenMaker, config, taskDistributor)
 		if err != nil {
 			log.Fatal("failed to run gateway server:", err)
 		}
 	}()
 
-	err = runGRPCServer(store, logger, tokenMaker, config)
+	err = runGRPCServer(store, logger, tokenMaker, config, taskDistributor)
 	if err != nil {
 		log.Fatal("exiting server application")
 		return
@@ -106,8 +122,26 @@ func runDBMigrations(migrationURL string, dbSource string) error {
 	return nil
 }
 
-func runGRPCServer(store persistence.Store, logger *slog.Logger, tokenMaker token.Maker, config util.Config) error {
-	server := gapi.NewServer(store, logger, tokenMaker, config)
+func runTaskProcessor(redisOpt asynq.RedisClientOpt, store persistence.Store, config util.Config) error {
+	mailer := mail.NewGmailSender(
+		config.EmailSenderName,
+		config.EmailSenderAddress,
+		config.EmailSenderPassword,
+	)
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer)
+	log.Println("task processor starting")
+
+	err := taskProcessor.Start()
+	if err != nil {
+		log.Fatal("failed to start task processor:", err)
+		return err
+	}
+
+	return nil
+}
+
+func runGRPCServer(store persistence.Store, logger *slog.Logger, tokenMaker token.Maker, config util.Config, taskDistributor worker.TaskDistributor) error {
+	server := gapi.NewServer(store, logger, tokenMaker, config, taskDistributor)
 
 	err := server.Start(config.GRPCServerAddress)
 	if err != nil {
@@ -118,8 +152,8 @@ func runGRPCServer(store persistence.Store, logger *slog.Logger, tokenMaker toke
 	return nil
 }
 
-func runGatewayServer(store persistence.Store, logger *slog.Logger, tokenMaker token.Maker, config util.Config) error {
-	server := gapi.NewServer(store, logger, tokenMaker, config)
+func runGatewayServer(store persistence.Store, logger *slog.Logger, tokenMaker token.Maker, config util.Config, taskDistributor worker.TaskDistributor) error {
+	server := gapi.NewServer(store, logger, tokenMaker, config, taskDistributor)
 
 	jsonOption := runtime.WithMarshalerOption(
 		runtime.MIMEWildcard,

@@ -17,3 +17,6 @@ To run the project, follow these steps:
 2. Run `make createdb` to create the DB in postgres.
 3. Run `make migrateup` to run the DB migrations.
 4. Now you are ready to use `make server` any time you want to run the server.
+
+To add new migrations:
+`migrate create -ext sql -dir internal/db/migration -seq <migration_name>`

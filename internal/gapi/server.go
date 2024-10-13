@@ -17,6 +17,7 @@ import (
 	"github.com/RobinHood3082/simplebank/internal/persistence"
 	"github.com/RobinHood3082/simplebank/internal/token"
 	"github.com/RobinHood3082/simplebank/util"
+	"github.com/RobinHood3082/simplebank/worker"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -24,15 +25,22 @@ import (
 // Server serves gRPC requests for our banking service
 type Server struct {
 	pb.UnimplementedSimpleBankServer
-	store      persistence.Store
-	logger     *slog.Logger
-	tokenMaker token.Maker
-	config     util.Config
+	store           persistence.Store
+	logger          *slog.Logger
+	tokenMaker      token.Maker
+	config          util.Config
+	taskDistributor worker.TaskDistributor
 }
 
 // NewServer creates a new gRPC server
-func NewServer(store persistence.Store, logger *slog.Logger, tokenMaker token.Maker, config util.Config) *Server {
-	server := &Server{store: store, logger: logger, tokenMaker: tokenMaker, config: config}
+func NewServer(store persistence.Store, logger *slog.Logger, tokenMaker token.Maker, config util.Config, taskDistributor worker.TaskDistributor) *Server {
+	server := &Server{
+		store:           store,
+		logger:          logger,
+		tokenMaker:      tokenMaker,
+		config:          config,
+		taskDistributor: taskDistributor,
+	}
 	return server
 }
 

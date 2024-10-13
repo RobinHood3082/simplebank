@@ -15,11 +15,20 @@ migrateup:
 migratedown:
 	migrate -path internal/db/migration -database "$(DB_URL)" -verbose down
 
+migrateup1:
+	migrate -path internal/db/migration -database "$(DB_URL)" -verbose up 1
+
+migratedown1:
+	migrate -path internal/db/migration -database "$(DB_URL)" -verbose down 1
+
 test:
-	go test -v -cover ./...
+	go test -v -cover -short ./...
 
 server:  
 	go run ./cmd/simplebank/main.go
+
+new_migration:
+	migrate create -ext sql -dir internal/db/migration -seq $(name)
 
 db_docs:
 	dbdocs build doc/db.dbml
@@ -43,4 +52,7 @@ proto:
 evans:
 	evans --host localhost --port 9090 -r repl --package pb --service SimpleBank
 
-.PHONY: postgres createdb dropdb migrateup migratedown test sqlc server db_docs db_schema proto evans
+redis:
+	docker run --name redis7.4.1 -p 6379:6379 -d redis:7.4.1-alpine
+
+.PHONY: postgres createdb dropdb migrateup migratedown test sqlc server db_docs db_schema proto evans redis new_migration
