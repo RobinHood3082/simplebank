@@ -120,6 +120,7 @@ func (server *Server) loginUser(w http.ResponseWriter, r *http.Request) {
 
 	accessToken, accessPayload, err := server.tokenMaker.CreateToken(
 		user.Username,
+		user.Role,
 		server.config.AccessTokenDuration,
 	)
 	if err != nil {
@@ -129,6 +130,7 @@ func (server *Server) loginUser(w http.ResponseWriter, r *http.Request) {
 
 	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(
 		user.Username,
+		user.Role,
 		server.config.RefreshTokenDuration,
 	)
 	if err != nil {
