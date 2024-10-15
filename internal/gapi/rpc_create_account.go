@@ -46,11 +46,16 @@ func (server *Server) CreateAccount(ctx context.Context, req *pb.CreateAccountRe
 			Currency: req.GetCurrency(),
 		},
 		AfterCreate: func(account persistence.Account) error {
+			accountIDStr := strconv.FormatInt(account.ID, 10)
+			if len(accountIDStr) > 4 {
+				accountIDStr = accountIDStr[len(accountIDStr)-4:]
+			}
+
 			taskPayload := &worker.PayloadSendAccountCreatedEmail{
 				Username:  account.Owner,
 				Balance:   account.Balance,
 				Currency:  account.Currency,
-				AccountID: "xxxx " + strconv.FormatInt(account.ID, 10),
+				AccountID: "xxxx" + accountIDStr,
 			}
 
 			opts := []asynq.Option{

@@ -103,10 +103,47 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 	return nil
 }
 
+func (processor *RedisTaskProcessor) ProcessTaskSendAccountCreatedEmail(ctx context.Context, task *asynq.Task) error {
+	var payload PayloadSendAccountCreatedEmail
+	if err := json.Unmarshal(task.Payload(), &payload); err != nil {
+		return fmt.Errorf("failed to unmarshal payload: %w", err)
+	}
+
+	user, err := processor.store.GetUser(ctx, payload.Username)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return fmt.Errorf("user not found: %w", asynq.SkipRetry)
+		}
+		return fmt.Errorf("failed to get user: %w", err)
+	}
+
+	subject := "Simple Bank: New Account Created"
+	content := fmt.Sprintf(
+		`Hello %s, <br/>
+		Your new account with ID: %s has been created. <br/>
+		Current balance: %d %s.`,
+		payload.Username,
+		payload.AccountID,
+		payload.Balance,
+		payload.Currency,
+	)
+	to := []string{user.Email}
+
+	err = processor.mailer.SendEmail(subject, content, to, nil, nil, nil)
+	if err != nil {
+		return fmt.Errorf("failed to send email: %w", err)
+	}
+
+	slog.Info("type", "recieved task", task.Type(), "payload", task.Payload(), "user", user.Username)
+
+	return nil
+}
+
 func (processor *RedisTaskProcessor) Start() error {
 	mux := asynq.NewServeMux()
 
 	mux.HandleFunc(TaskSendVerifyEmail, processor.ProcessTaskSendVerifyEmail)
+	mux.HandleFunc(TaskSendAccountCreatedEmail, processor.ProcessTaskSendAccountCreatedEmail)
 
 	return processor.server.Start(mux)
 }
