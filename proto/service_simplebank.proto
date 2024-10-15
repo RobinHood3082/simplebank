@@ -7,6 +7,7 @@ import "rpc_create_user.proto";
 import "rpc_login_user.proto";
 import "rpc_update_user.proto";
 import "rpc_verify_email.proto";
+import "rpc_create_account.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/RobinHood3082/simplebank/internal/pb";
@@ -68,6 +69,18 @@ service SimpleBank {
             description: "Use this API to verify email";
             summary: "Verify email";
             tags: "User";
+        };
+    }
+
+    rpc CreateAccount (CreateAccountRequest) returns (CreateAccountResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/create_account"
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            description: "Use this API to create a new account";
+            summary: "Create new account";
+            tags: "Account";
         };
     }
 }
