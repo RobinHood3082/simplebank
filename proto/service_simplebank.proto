@@ -32,6 +32,7 @@ service SimpleBank {
         option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
             description: "Use this API to create a new user";
             summary: "Create new user";
+            tags: "User";
         };
     }
     
@@ -43,6 +44,7 @@ service SimpleBank {
         option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
             description: "Use this API to login user and get access token & refresh token";
             summary: "Login user";
+            tags: "User";
         };
     }
 
@@ -54,6 +56,7 @@ service SimpleBank {
         option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
             description: "Use this API to update user";
             summary: "Update user";
+            tags: "User";
         };
     }
 
@@ -64,6 +67,7 @@ service SimpleBank {
         option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
             description: "Use this API to verify email";
             summary: "Verify email";
+            tags: "User";
         };
     }
 }
