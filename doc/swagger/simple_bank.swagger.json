@@ -224,6 +224,9 @@
     "pbCreateAccountRequest": {
       "type": "object",
       "properties": {
+        "username": {
+          "type": "string"
+        },
         "currency": {
           "type": "string"
         }
