@@ -21,7 +21,7 @@
     "application/json"
   ],
   "paths": {
-    "/api/v1/add_money": {
+    "/api/v1/add_account_balance": {
       "patch": {
         "summary": "Add money to account",
         "description": "Use this API to add money to account",
@@ -30,7 +30,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/pbAddMoneyResponse"
+              "$ref": "#/definitions/pbAddAccountBalanceResponse"
             }
           },
           "default": {
@@ -46,7 +46,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/pbAddMoneyRequest"
+              "$ref": "#/definitions/pbAddAccountBalanceRequest"
             }
           }
         ],
@@ -255,7 +255,7 @@
         }
       }
     },
-    "pbAddMoneyRequest": {
+    "pbAddAccountBalanceRequest": {
       "type": "object",
       "properties": {
         "accountId": {
@@ -268,7 +268,7 @@
         }
       }
     },
-    "pbAddMoneyResponse": {
+    "pbAddAccountBalanceResponse": {
       "type": "object",
       "properties": {
         "account": {

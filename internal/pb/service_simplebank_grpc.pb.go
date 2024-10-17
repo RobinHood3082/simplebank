@@ -36,7 +36,7 @@ type SimpleBankClient interface {
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error)
 	VerifyEmail(ctx context.Context, in *VerifyEmailRequest, opts ...grpc.CallOption) (*VerifyEmailResponse, error)
 	CreateAccount(ctx context.Context, in *CreateAccountRequest, opts ...grpc.CallOption) (*CreateAccountResponse, error)
-	AddMoney(ctx context.Context, in *AddMoneyRequest, opts ...grpc.CallOption) (*AddMoneyResponse, error)
+	AddMoney(ctx context.Context, in *AddAccountBalanceRequest, opts ...grpc.CallOption) (*AddAccountBalanceResponse, error)
 }
 
 type simpleBankClient struct {
@@ -97,9 +97,9 @@ func (c *simpleBankClient) CreateAccount(ctx context.Context, in *CreateAccountR
 	return out, nil
 }
 
-func (c *simpleBankClient) AddMoney(ctx context.Context, in *AddMoneyRequest, opts ...grpc.CallOption) (*AddMoneyResponse, error) {
+func (c *simpleBankClient) AddMoney(ctx context.Context, in *AddAccountBalanceRequest, opts ...grpc.CallOption) (*AddAccountBalanceResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AddMoneyResponse)
+	out := new(AddAccountBalanceResponse)
 	err := c.cc.Invoke(ctx, SimpleBank_AddMoney_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -116,7 +116,7 @@ type SimpleBankServer interface {
 	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error)
 	VerifyEmail(context.Context, *VerifyEmailRequest) (*VerifyEmailResponse, error)
 	CreateAccount(context.Context, *CreateAccountRequest) (*CreateAccountResponse, error)
-	AddMoney(context.Context, *AddMoneyRequest) (*AddMoneyResponse, error)
+	AddMoney(context.Context, *AddAccountBalanceRequest) (*AddAccountBalanceResponse, error)
 	mustEmbedUnimplementedSimpleBankServer()
 }
 
@@ -142,7 +142,7 @@ func (UnimplementedSimpleBankServer) VerifyEmail(context.Context, *VerifyEmailRe
 func (UnimplementedSimpleBankServer) CreateAccount(context.Context, *CreateAccountRequest) (*CreateAccountResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateAccount not implemented")
 }
-func (UnimplementedSimpleBankServer) AddMoney(context.Context, *AddMoneyRequest) (*AddMoneyResponse, error) {
+func (UnimplementedSimpleBankServer) AddMoney(context.Context, *AddAccountBalanceRequest) (*AddAccountBalanceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddMoney not implemented")
 }
 func (UnimplementedSimpleBankServer) mustEmbedUnimplementedSimpleBankServer() {}
@@ -257,7 +257,7 @@ func _SimpleBank_CreateAccount_Handler(srv interface{}, ctx context.Context, dec
 }
 
 func _SimpleBank_AddMoney_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddMoneyRequest)
+	in := new(AddAccountBalanceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -269,7 +269,7 @@ func _SimpleBank_AddMoney_Handler(srv interface{}, ctx context.Context, dec func
 		FullMethod: SimpleBank_AddMoney_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SimpleBankServer).AddMoney(ctx, req.(*AddMoneyRequest))
+		return srv.(SimpleBankServer).AddMoney(ctx, req.(*AddAccountBalanceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

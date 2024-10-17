@@ -8,7 +8,7 @@ import "rpc_login_user.proto";
 import "rpc_update_user.proto";
 import "rpc_verify_email.proto";
 import "rpc_create_account.proto";
-import "rpc_add_money.proto";
+import "rpc_add_account_balance.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/RobinHood3082/simplebank/internal/pb";
@@ -85,9 +85,9 @@ service SimpleBank {
         };
     }
 
-    rpc AddMoney (AddMoneyRequest) returns (AddMoneyResponse) {
+    rpc AddMoney (AddAccountBalanceRequest) returns (AddAccountBalanceResponse) {
         option (google.api.http) = {
-            patch: "/api/v1/add_money"
+            patch: "/api/v1/add_account_balance"
             body: "*"
         };
         option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
