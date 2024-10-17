@@ -85,7 +85,7 @@ service SimpleBank {
         };
     }
 
-    rpc AddMoney (AddAccountBalanceRequest) returns (AddAccountBalanceResponse) {
+    rpc AddAccountBalance (AddAccountBalanceRequest) returns (AddAccountBalanceResponse) {
         option (google.api.http) = {
             patch: "/api/v1/add_account_balance"
             body: "*"
