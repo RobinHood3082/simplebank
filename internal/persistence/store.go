@@ -13,6 +13,7 @@ type Store interface {
 	CreateUserTx(ctx context.Context, arg CreateUserTxParams) (CreateUserTxResult, error)
 	VerifyEmailTx(ctx context.Context, arg VerifyEmailTxParams) (VerifyEmailTxResult, error)
 	CreateAccountTx(ctx context.Context, arg CreateAccountTxParams) (CreateAccountTxResult, error)
+	AddAccountBalanceTx(ctx context.Context, arg AddAccountBalanceTxParams) (AddAccountBalanceTxResult, error)
 }
 
 // PgStore provides all functions to execute db queries and transactions
