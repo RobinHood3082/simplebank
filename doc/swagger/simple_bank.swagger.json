@@ -212,14 +212,14 @@
         },
         "parameters": [
           {
-            "name": "emailId",
+            "name": "email_id",
             "in": "query",
             "required": false,
             "type": "string",
             "format": "int64"
           },
           {
-            "name": "secretCode",
+            "name": "secret_code",
             "in": "query",
             "required": false,
             "type": "string"
@@ -249,7 +249,7 @@
         "currency": {
           "type": "string"
         },
-        "createdAt": {
+        "created_at": {
           "type": "string",
           "format": "date-time"
         }
@@ -258,7 +258,7 @@
     "pbAddAccountBalanceRequest": {
       "type": "object",
       "properties": {
-        "accountId": {
+        "account_id": {
           "type": "string",
           "format": "int64"
         },
@@ -301,7 +301,7 @@
         "username": {
           "type": "string"
         },
-        "fullName": {
+        "full_name": {
           "type": "string"
         },
         "email": {
@@ -337,20 +337,20 @@
         "user": {
           "$ref": "#/definitions/pbUser"
         },
-        "sessionId": {
+        "session_id": {
           "type": "string"
         },
-        "accessToken": {
+        "access_token": {
           "type": "string"
         },
-        "refreshToken": {
+        "refresh_token": {
           "type": "string"
         },
-        "accessTokenExpiresAt": {
+        "access_token_expires_at": {
           "type": "string",
           "format": "date-time"
         },
-        "refreshTokenExpiresAt": {
+        "refresh_token_expires_at": {
           "type": "string",
           "format": "date-time"
         }
@@ -362,7 +362,7 @@
         "username": {
           "type": "string"
         },
-        "fullName": {
+        "full_name": {
           "type": "string"
         },
         "email": {
@@ -387,17 +387,17 @@
         "username": {
           "type": "string"
         },
-        "fullName": {
+        "full_name": {
           "type": "string"
         },
         "email": {
           "type": "string"
         },
-        "passwordChangedAt": {
+        "password_changed_at": {
           "type": "string",
           "format": "date-time"
         },
-        "createdAt": {
+        "created_at": {
           "type": "string",
           "format": "date-time"
         }
@@ -406,7 +406,7 @@
     "pbVerifyEmailResponse": {
       "type": "object",
       "properties": {
-        "isVerified": {
+        "is_verified": {
           "type": "boolean"
         }
       }
