@@ -25,7 +25,7 @@
       "patch": {
         "summary": "Add money to account",
         "description": "Use this API to add money to account",
-        "operationId": "SimpleBank_AddMoney",
+        "operationId": "SimpleBank_AddAccountBalance",
         "responses": {
           "200": {
             "description": "A successful response.",
