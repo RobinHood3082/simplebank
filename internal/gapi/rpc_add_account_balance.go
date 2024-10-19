@@ -2,10 +2,14 @@ package gapi
 
 import (
 	"context"
+	"strconv"
+	"time"
 
 	"github.com/RobinHood3082/simplebank/internal/pb"
 	"github.com/RobinHood3082/simplebank/internal/persistence"
 	"github.com/RobinHood3082/simplebank/util"
+	"github.com/RobinHood3082/simplebank/worker"
+	"github.com/hibiken/asynq"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -33,22 +37,39 @@ func (server *Server) AddAccountBalance(ctx context.Context, req *pb.AddAccountB
 		return nil, status.Errorf(codes.InvalidArgument, "amount must be positive")
 	}
 
-	arg := persistence.AddAccountBalanceTxParams{
-		AddAccountBalanceParams: persistence.AddAccountBalanceParams{
-			ID:     req.GetAccountId(),
-			Amount: req.GetAmount(),
-		},
-		AfterCreate: func(account persistence.Account) error {
-			return nil
-		},
+	res, err := server.store.AddAccountBalance(ctx, persistence.AddAccountBalanceParams{
+		ID:     req.GetAccountId(),
+		Amount: req.GetAmount(),
+	})
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to add account balance")
 	}
 
-	txResult, err := server.store.AddAccountBalanceTx(ctx, arg)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to update account balance")
+	accountIDStr := strconv.FormatInt(account.ID, 10)
+	if len(accountIDStr) > 4 {
+		accountIDStr = accountIDStr[len(accountIDStr)-4:]
 	}
+
+	updatedAccount, _ := server.store.GetAccount(ctx, req.GetAccountId())
+
+	taskPayload := worker.PayloadSendBalanceAddedEmail{
+		Username:     updatedAccount.Owner,
+		AccountID:    "xxxx" + accountIDStr,
+		AddedBalance: req.GetAmount(),
+		Currency:     updatedAccount.Currency,
+		NewBalance:   updatedAccount.Balance,
+	}
+
+	opts := []asynq.Option{
+		asynq.MaxRetry(10),
+		asynq.ProcessIn(10 * time.Second),
+		asynq.Queue(worker.QueueCritical),
+	}
+
+	_ = server.taskDistributor.DistributeTask(ctx, worker.TaskSendBalanceAddedEmail, taskPayload, opts...)
 
 	return &pb.AddAccountBalanceResponse{
-		Account: convertAccount(txResult.Account),
+		Account: convertAccount(res),
 	}, nil
 }
