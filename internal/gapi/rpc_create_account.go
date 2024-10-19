@@ -51,7 +51,7 @@ func (server *Server) CreateAccount(ctx context.Context, req *pb.CreateAccountRe
 				accountIDStr = accountIDStr[len(accountIDStr)-4:]
 			}
 
-			taskPayload := &worker.PayloadSendAccountCreatedEmail{
+			taskPayload := worker.PayloadSendAccountCreatedEmail{
 				Username:  account.Owner,
 				Balance:   account.Balance,
 				Currency:  account.Currency,
@@ -64,7 +64,7 @@ func (server *Server) CreateAccount(ctx context.Context, req *pb.CreateAccountRe
 				asynq.Queue(worker.QueueCritical),
 			}
 
-			return server.taskDistributor.DistributeTaskSendAccountCreatedEmail(ctx, taskPayload, opts...)
+			return server.taskDistributor.DistributeTask(ctx, worker.TaskSendAccountCreatedEmail, taskPayload, opts...)
 		},
 	}
 
