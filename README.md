@@ -1,6 +1,6 @@
 # SimpleBank
 
-Simple bank, made with Go. (Work-in-progress, not very organized yet).
+Banking API sample. (Work-in-progress, not very organized yet).
 
 ## Features
 
