@@ -8,6 +8,8 @@ Simple bank, made with Go. (Work-in-progress, not very organized yet).
 - Account creation and management
 - Deposit and withdrawal functionality
 - Transaction history tracking
+- Email notification
+- Role-based admin control
 
 ## Installation
 
