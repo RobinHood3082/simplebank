@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package pb;
+
+import "account.proto";
+
+option go_package = "github.com/RobinHood3082/simplebank/internal/pb";
+
+message CreateAccountRequest {
+    string username = 1;
+    string currency = 2;
+}
+
+message CreateAccountResponse {
+    Account account = 1;
+}

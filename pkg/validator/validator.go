@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/mail"
 	"regexp"
+
+	"github.com/RobinHood3082/simplebank/util"
 )
 
 var (
@@ -67,6 +69,13 @@ func ValidateEmailId(value int64) error {
 func ValidateVerifyEmailCode(value string) error {
 	if err := ValidateString(value, 32, 128); err != nil {
 		return err
+	}
+	return nil
+}
+
+func ValidateCurrency(currency string) error {
+	if !util.IsCurrencySupported(currency) {
+		return fmt.Errorf("currency is not supported")
 	}
 	return nil
 }
